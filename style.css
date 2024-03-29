@@ -1,0 +1,11 @@
+body {
+  text-align: center;
+    background-color: rgb(94, 95, 94);
+}
+
+#board {
+  background-color: rgb(0, 0, 0);
+  border-top: 5px solid rgb(85, 77, 255);
+  border-right: 5px solid rgb(143, 163, 237);
+  border-left: 5px solid rgb(143, 163, 237);
+}
