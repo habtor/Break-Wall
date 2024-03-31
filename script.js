@@ -1,3 +1,9 @@
+// win and lose divs
+let winDiv;
+let loseDiv;
+let restartBtn;
+let restartBtn2;
+
 // board
 let board;
 let boardWidth = 800;
@@ -9,11 +15,19 @@ let playerWidth = 80;
 let playerHeight = 10;
 let playerSpeedX = 10;
 
+let player = {
+  x: boardWidth / 2 - playerWidth / 2,
+  y: boardHeight - playerHeight - 10,
+  width: playerWidth,
+  height: playerHeight,
+  speedX: playerSpeedX,
+};
+
 // ball
 let ballWidth = 10;
 let ballHight = 10;
-let ballSpeedX = 1;
-let ballSpeedY = 1;
+let ballSpeedX = 3;
+let ballSpeedY = 3;
 
 let ball = {
   x: Math.floor(Math.random() * 500),
@@ -24,45 +38,26 @@ let ball = {
   speedY: ballSpeedY,
 };
 
-// bloks
-let blockArray = [];
-let blockArray2 = [];
-let blockWidth = 7;
-let blockHeight = 7;
-let blockColumnCount = 8;
-let blockRowCount = 1;
-let blockMaxRow = 10;
-let blockCount = 0;
-let blockCount2 = 0;
-
-// starting block
-let blocX = 15;
-let blocY = 15;
-
-let player = {
-  x: boardWidth / 2 - playerWidth / 2,
-  y: boardHeight - playerHeight - 10,
-  width: playerWidth,
-  height: playerHeight,
-  speedX: playerSpeedX,
-};
-
 window.onload = function () {
   board = document.getElementById("board");
   board.height = boardHeight;
   board.width = boardWidth;
   context = board.getContext("2d");
-
-  // drawe player
-  context.fillStyle = "red";
-  context.fillRect(player.x, player.y, player.width, player.height);
+  winDiv = document.getElementById("win");
+  loseDiv = document.getElementById("lose");
+  restartBtn = document.getElementById("restartBtn");
+  restartBtn2 = document.getElementById("restartBtn2");
+  restartBtn.addEventListener("click", function () {
+    location.reload();
+  });
+  restartBtn2.addEventListener("click", function () {
+    location.reload();
+  });
 
   requestAnimationFrame(update);
   document.addEventListener("mousemove", movePlayer);
 
   // create blocks
-  createBlcks();
-  createLungeShape();
   drawMap();
 };
 
@@ -74,9 +69,9 @@ function update() {
   context.fillStyle = "white";
   context.fillRect(player.x, player.y, player.width, player.height);
   context.fillStyle = "orange";
-  context.fillRect(player.x, player.y, player.width-55, player.height);
+  context.fillRect(player.x, player.y, player.width - 55, player.height);
   context.fillStyle = "gray";
-  context.fillRect(player.x+80, player.y, player.width-70, player.height);
+  context.fillRect(player.x + 80, player.y, player.width - 70, player.height);
 
   // ball
   context.fillStyle = "white";
@@ -84,34 +79,40 @@ function update() {
   ball.y += ball.speedY;
   context.fillRect(ball.x, ball.y, ball.width, ball.height);
 
+  context.beginPath();
+  context.arc(ball.x, ball.y, 15, 0, 2 * Math.PI);
+  context.fill();
+
   // ball collision with walls
   if (ball.y < 0) {
     ball.speedY *= -1;
   } else if (ball.x < 0 || ball.x + ball.width >= boardWidth) {
     ball.speedX = -ball.speedX;
-  } else if (ball.y + ball.height >= boardHeight) {
-    // game over
-    // ball.speedY = -ball.speedY;
-  }
+  } 
 
   // ball collision with player
   if (topCollision(ball, player) || bottomCollision(ball, player)) {
     ball.speedY *= -1;
   }
 
-  // block draw
+  // game over
+  if (ball.y > board.height) {
+    loseDiv.style.display = "flex";
+  }
 
+  // draw lung blocks
   for (let i = 0; i < lungMapArray.length; i++) {
     let block = lungMapArray[i];
     if (!block.break) {
       if (topCollision(ball, block) || bottomCollision(ball, block)) {
         ball.speedY *= -1;
         block.break = true;
-        blockCount2--;
-        // if (blockCount === 0) {
-        //   alert("You win");
-        //   document.location.reload();
-        // }
+        lungMapArrayCount--;
+        if (lungMapArrayCount === 400) {
+          winDiv.style.display = "flex";
+          ball.speedX = 0;
+          ball.speedY = 0;
+        }
       }
       context.fillRect(block.x, block.y, block.width, block.height);
     }
@@ -158,41 +159,11 @@ function rightCollision(ball, block) {
 }
 
 // create blocks
-function createBlcks() {
-  blockArray = [];
-  for (let c = 0; c < blockColumnCount; c++) {
-    for (let r = 0; r < blockRowCount; r++) {
-      let block = {
-        x: 200 + c * blockWidth + c * 10,
-        y: 200 + r * blockHeight + r * 10,
-        width: blockWidth,
-        height: blockHeight,
-        break: false,
-      };
-      blockArray.push(block);
-    }
-  }
-  blockCount = blockArray.length;
-}
 
-function createLungeShape() {
-  blockArray2 = [];
-  for (let c = 0; c < 10; c++) {
-    for (let r = 0; r < 15; r++) {
-      let block = {
-        x: blocX + c * blockWidth + c * 1,
-        y: blocY + r * blockHeight + r * 1,
-        width: blockWidth,
-        height: blockHeight,
-        break: false,
-      };
-      blockArray2.push(block);
-    }
-  }
-  blockCount = blockArray.length;
-}
-
+let blockWidth = 7;
+let blockHeight = 7;
 let lungMapArray = [];
+
 let lungMapArrayCount = 0;
 function drawMap() {
   lungMapArray = [];
@@ -210,7 +181,7 @@ function drawMap() {
   }
   lungMapArrayCount = lungMapArray.length;
 }
-
+console.log(lungMapArrayCount);
 let lungMap = [
   "0",
   "0",
